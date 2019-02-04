@@ -1,4 +1,4 @@
-function hitta_funktion()
+function [own_loss, poly_loss, errors, indices, x, y, test_x, test_poly1, test_poly2, res_poly] = hitta_funktion(n)
 
 siffror=[%
     10.000   2028.960
@@ -99,31 +99,28 @@ siffror=[%
 ];
 
 
-
-
 x = siffror(:, 1);
 y = siffror(:, 2);
-n = 6;
 for i=1:length(siffror)
     for k=1:n+1
         A(i,k) = x(i)^(n+1-k);
     end;
 end;
 
-coefficients = inv(transpose(A)*A)*transpose(A)*y;
 p = polyfit(x, y, n);
-coefficients2 = p';
+coefficients = p';
+coefficients2 = inv(transpose(A)*A)*transpose(A)*y;
 
-test_x = 5:0.01:25;
-poly_y = polynomial(test_x, coefficients);
+test_x = 8:0.01:22;
+test_poly1 = polynomial(test_x, coefficients);
+test_poly2 = polynomial(test_x, coefficients2);
 
+[errors2, indices2] = squared_error(y, polynomial(x, coefficients2));
+[errors, indices] = squared_error(y, polynomial(x, coefficients));
+own_loss = mean(errors2);
+poly_loss = mean(errors);
 
-plot(test_x,poly_y, "b-", x, y, "r*")
-
-loss1 = MSE(y, polynomial(x, coefficients))
-loss2 = MSE(y, polynomial(x, coefficients2))
-pause(100)
-
+res_poly = polynomial(x, coefficients);
 
 end
 
@@ -137,7 +134,7 @@ function y = polynomial(x, coefficients)
 end
 
 
-function loss = MSE(y, y_hat)
-    loss = (y-y_hat).^2;
-    loss = mean(loss);
+function [errors, indices] = squared_error(y, y_hat)
+    errors = (y-y_hat).^2;
+    [sorted_errors, indices] = sort(errors, "descend");
 end
